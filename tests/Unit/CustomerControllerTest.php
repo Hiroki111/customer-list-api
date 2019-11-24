@@ -10,7 +10,7 @@ class CustomerControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    private $pageSize = 10;
+    private $defaultPageSize = 10;
 
     /** @test */
     public function shouldGetFirstNCustomers()
@@ -23,7 +23,61 @@ class CustomerControllerTest extends TestCase
 
         $res->assertStatus(201)
             ->assertJson([
-                'data' => Customer::take($this->pageSize)->get()->toArray(),
+                'data' => Customer::take($this->defaultPageSize)->get()->toArray(),
+            ]);
+    }
+
+    /** @test */
+    public function shouldGetCustomersWithSize()
+    {
+        foreach (range(1, 100) as $i) {
+            factory(Customer::class)->create();
+        }
+        $pageSize = 15;
+
+        $res = $this->get("/api/customers?pageSize=$pageSize");
+
+        $res->assertStatus(201)
+            ->assertJson([
+                'data' => Customer::take($pageSize)->get()->toArray(),
+            ]);
+    }
+
+    /** @test */
+    public function shouldGetCustomersWithIndex()
+    {
+        foreach (range(1, 100) as $i) {
+            factory(Customer::class)->create();
+        }
+        $start = 10;
+
+        $res = $this->get("/api/customers?start=$start");
+
+        $res->assertStatus(201)
+            ->assertJson([
+                'data' => Customer::where('id', '>=', $start)->take($this->defaultPageSize)->get()->toArray(),
+            ]);
+    }
+
+    /** @test */
+    public function shouldGetCustomersWithKeyword()
+    {
+        foreach (range(1, 100) as $i) {
+            factory(Customer::class)->create(['name' => ['Alice', 'Bob', 'Carol'][rand(0, 2)]]);
+        }
+        factory(Customer::class)->create(['name' => 'john']);
+        factory(Customer::class)->create(['name' => 'JOHN']);
+        factory(Customer::class)->create(['name' => 'Johny']);
+        factory(Customer::class)->create(['name' => 'Johannes']);
+        factory(Customer::class)->create(['name' => 'Elton John']);
+
+        $keyword = "john";
+
+        $res = $this->get("/api/customers?keyword=$keyword");
+
+        $res->assertStatus(201)
+            ->assertJson([
+                'data' => Customer::where('name', 'LIKE', $keyword)->take($this->defaultPageSize)->get()->toArray(),
             ]);
     }
 }
