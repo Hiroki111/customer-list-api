@@ -10,18 +10,20 @@ class CustomerControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
+    private $pageSize = 10;
+
     /** @test */
-    public function canGetAllCustomers()
+    public function shouldGetFirstNCustomers()
     {
-        foreach (range(1, 1000) as $i) {
+        foreach (range(1, 100) as $i) {
             factory(Customer::class)->create();
         }
 
-        $res = $this->get('/api/customers');
+        $res = $this->get("/api/customers");
 
         $res->assertStatus(201)
             ->assertJson([
-                'data' => Customer::all()->toArray(),
+                'data' => Customer::take($this->pageSize)->get()->toArray(),
             ]);
     }
 }
