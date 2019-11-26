@@ -6,15 +6,13 @@ use App\Customer;
 
 class CustomerController extends Controller
 {
-    private $defaultPageSize = 10;
-
     public function index()
     {
-        $pageSize = request('pageSize', $this->defaultPageSize);
+        $pageSize = request('pageSize', null);
         $start = request('start', 0);
-        $keyword = request('keyword');
+        $keyword = request('keyword', null);
         return response()->json([
-            'data' => Customer::where('id', '>=', $start)->where('name', 'LIKE', "%$keyword%")->take($pageSize)->get(),
+            'data' => Customer::getCustomerList($pageSize, $start, $keyword),
         ], 201);
     }
 }

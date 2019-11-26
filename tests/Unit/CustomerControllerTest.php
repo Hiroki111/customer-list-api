@@ -65,11 +65,11 @@ class CustomerControllerTest extends TestCase
         foreach (range(1, 100) as $i) {
             factory(Customer::class)->create(['name' => ['Alice', 'Bob', 'Carol'][rand(0, 2)]]);
         }
-        factory(Customer::class)->create(['name' => 'john']);
-        factory(Customer::class)->create(['name' => 'JOHN']);
-        factory(Customer::class)->create(['name' => 'Johny']);
-        factory(Customer::class)->create(['name' => 'Johannes']);
-        factory(Customer::class)->create(['name' => 'Elton John']);
+        $c1 = factory(Customer::class)->create(['name' => 'john']);
+        $c2 = factory(Customer::class)->create(['name' => 'JOHN']);
+        $c3 = factory(Customer::class)->create(['name' => 'Johny']);
+        $c4 = factory(Customer::class)->create(['name' => 'Johannes']);
+        $c5 = factory(Customer::class)->create(['name' => 'Elton John']);
 
         $keyword = "john";
 
