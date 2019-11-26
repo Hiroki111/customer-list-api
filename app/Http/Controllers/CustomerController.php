@@ -15,4 +15,11 @@ class CustomerController extends Controller
             'data' => Customer::getCustomerList($pageSize, $start, $keyword),
         ], 201);
     }
+
+    public function show($id)
+    {
+        return response()->json([
+            'data' => Customer::find($id),
+        ], 201);
+    }
 }

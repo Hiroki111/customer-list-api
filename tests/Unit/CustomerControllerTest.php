@@ -80,4 +80,33 @@ class CustomerControllerTest extends TestCase
                 'data' => Customer::where('name', 'LIKE', $keyword)->take($this->defaultPageSize)->get()->toArray(),
             ]);
     }
+
+    /** @test */
+    public function shouldGetCustomerDetails()
+    {
+        $c1 = factory(Customer::class)->create(['name' => 'Alice']);
+        $c2 = factory(Customer::class)->create(['name' => 'Bob']);
+        $c3 = factory(Customer::class)->create(['name' => 'Carol']);
+
+        $res = $this->get("/api/customers/2");
+
+        $res->assertStatus(201)
+            ->assertJson(['data' => [
+                'id' => $c2->id,
+                'name' => $c2->name,
+            ]]);
+    }
+
+    /** @test */
+    public function shouldReturnNullIfInvalidIdIsProvided()
+    {
+        $c1 = factory(Customer::class)->create(['name' => 'Alice']);
+        $c2 = factory(Customer::class)->create(['name' => 'Bob']);
+        $c3 = factory(Customer::class)->create(['name' => 'Carol']);
+
+        $res = $this->get("/api/customers/4");
+
+        $res->assertStatus(201)
+            ->assertJson(['data' => null]);
+    }
 }
