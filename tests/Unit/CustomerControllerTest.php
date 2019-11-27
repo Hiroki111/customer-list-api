@@ -109,4 +109,26 @@ class CustomerControllerTest extends TestCase
         $res->assertStatus(201)
             ->assertJson(['data' => null]);
     }
+
+    /** @test */
+    public function shouldDeleteCustomer()
+    {
+        $c1 = factory(Customer::class)->create(['name' => 'Alice']);
+        $this->assertEquals(Customer::find(1)->id, $c1->id);
+
+        $res = $this->delete("/api/customers/1");
+
+        $res->assertStatus(201);
+        $this->assertEquals(Customer::find(1), null);
+    }
+
+    /** @test */
+    public function deleteingWithInvalidIdReturnsError()
+    {
+        $this->assertEquals(Customer::all()->count(), 0);
+
+        $res = $this->delete("/api/customers/1");
+
+        $res->assertStatus(404);
+    }
 }

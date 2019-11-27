@@ -22,4 +22,11 @@ class CustomerController extends Controller
             'data' => Customer::find($id),
         ], 201);
     }
+
+    public function destroy($id)
+    {
+        $customer = Customer::findOrFail($id);
+        $customer->delete();
+        return response()->json([], 201);
+    }
 }
