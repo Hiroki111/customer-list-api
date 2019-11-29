@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Customer;
+use Validator;
 
 class CustomerController extends Controller
 {
@@ -21,6 +22,28 @@ class CustomerController extends Controller
         return response()->json([
             'data' => Customer::find($id),
         ], 201);
+    }
+
+    public function store()
+    {
+        $validator = Validator::make(request()->all(), [
+            'name' => 'required',
+            'email' => 'email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['messages' => $validator->errors()], 400);
+        }
+
+        Customer::create([
+            'name' => request('name'),
+            'phone' => request('phone'),
+            'email' => request('email'),
+            'address' => request('address'),
+            'group_id' => request('group_id'),
+            'note' => request('note'),
+        ]);
+        return response()->json([], 201);
     }
 
     public function destroy($id)

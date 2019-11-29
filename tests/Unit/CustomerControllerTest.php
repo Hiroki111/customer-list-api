@@ -13,7 +13,7 @@ class CustomerControllerTest extends TestCase
     private $defaultPageSize = 10;
 
     /** @test */
-    public function shouldGetFirstNCustomers()
+    public function canGetFirstNCustomers()
     {
         foreach (range(1, 100) as $i) {
             factory(Customer::class)->create();
@@ -28,7 +28,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldGetCustomersWithSize()
+    public function canGetCustomersWithSize()
     {
         foreach (range(1, 100) as $i) {
             factory(Customer::class)->create();
@@ -44,7 +44,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldGetCustomersWithIndex()
+    public function canGetCustomersWithIndex()
     {
         foreach (range(1, 100) as $i) {
             factory(Customer::class)->create();
@@ -60,7 +60,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldGetCustomersWithKeyword()
+    public function canGetCustomersWithKeyword()
     {
         foreach (range(1, 100) as $i) {
             factory(Customer::class)->create(['name' => ['Alice', 'Bob', 'Carol'][rand(0, 2)]]);
@@ -82,7 +82,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldGetCustomerDetails()
+    public function canGetCustomerDetails()
     {
         $c1 = factory(Customer::class)->create(['name' => 'Alice']);
         $c2 = factory(Customer::class)->create(['name' => 'Bob']);
@@ -98,7 +98,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldReturnNullIfInvalidIdIsProvided()
+    public function canReturnNullIfInvalidIdIsProvided()
     {
         $c1 = factory(Customer::class)->create(['name' => 'Alice']);
         $c2 = factory(Customer::class)->create(['name' => 'Bob']);
@@ -111,7 +111,7 @@ class CustomerControllerTest extends TestCase
     }
 
     /** @test */
-    public function shouldDeleteCustomer()
+    public function canDeleteCustomer()
     {
         $c1 = factory(Customer::class)->create(['name' => 'Alice']);
         $this->assertEquals(Customer::find(1)->id, $c1->id);
@@ -130,5 +130,71 @@ class CustomerControllerTest extends TestCase
         $res = $this->delete("/api/customers/1");
 
         $res->assertStatus(404);
+    }
+
+    /** @test */
+    public function canCreateCustomer()
+    {
+        $this->assertEquals(Customer::find(1), null);
+        $input = [
+            'name' => 'John Smith',
+            'phone' => '111 222 333',
+            'email' => 'test@example.com',
+            'address' => '111 Blue St',
+            'group_id' => 0,
+            'note' => 'blah blah',
+        ];
+
+        $res = $this->post("/api/customers", $input);
+        $customer = Customer::find(1);
+
+        $res->assertStatus(201);
+        $this->assertEquals($customer->id, 1);
+        $this->assertEquals($customer->name, 'John Smith');
+        $this->assertEquals($customer->phone, '111 222 333');
+        $this->assertEquals($customer->email, 'test@example.com');
+        $this->assertEquals($customer->address, '111 Blue St');
+        $this->assertEquals($customer->group_id, 0);
+        $this->assertEquals($customer->note, 'blah blah');
+    }
+
+    /** @test */
+    public function canCreateCustomerWithNameOnly()
+    {
+        $this->assertEquals(Customer::find(1), null);
+        $input = [
+            'name' => 'John Smith',
+        ];
+
+        $res = $this->post("/api/customers", $input);
+        $customer = Customer::find(1);
+
+        $res->assertStatus(201);
+        $this->assertEquals($customer->id, 1);
+        $this->assertEquals($customer->name, 'John Smith');
+        $this->assertEquals($customer->phone, null);
+        $this->assertEquals($customer->email, null);
+        $this->assertEquals($customer->address, null);
+        $this->assertEquals($customer->group_id, null);
+        $this->assertEquals($customer->note, null);
+    }
+
+    /** @test */
+    public function cannotCreateCustomerWithInvalidInput()
+    {
+        $this->assertEquals(Customer::find(1), null);
+        $input = [
+            'email' => 'test',
+        ];
+
+        $res = $this->post("/api/customers", $input);
+
+        $res->assertStatus(400)->assertJson([
+            'messages' => [
+                'name' => ['The name field is required.'],
+                'email' => ['The email must be a valid email address.'],
+            ],
+        ]);
+        $this->assertEquals(Customer::find(1), null);
     }
 }
