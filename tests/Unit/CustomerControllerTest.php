@@ -197,4 +197,89 @@ class CustomerControllerTest extends TestCase
         ]);
         $this->assertEquals(Customer::find(1), null);
     }
+
+    /** @test */
+    public function canUpdateCustomer()
+    {
+        $c1 = factory(Customer::class)->create([
+            'name' => 'John Smith',
+            'phone' => '111 222 333',
+            'email' => 'test@example.com',
+            'address' => '111 Blue St',
+            'group_id' => 0,
+            'note' => 'blah blah',
+        ]);
+
+        $res = $this->put("/api/customers/1", [
+            'name' => 'John Doe',
+            'phone' => '444 555 666',
+            'email' => 'updated@example.com',
+            'address' => '222 Green St',
+            'group_id' => 1,
+            'note' => 'I\'m, testing',
+        ]);
+
+        $customer = Customer::find(1);
+
+        $res->assertStatus(201);
+        $this->assertEquals($customer->id, 1);
+        $this->assertEquals($customer->name, 'John Doe');
+        $this->assertEquals($customer->phone, '444 555 666');
+        $this->assertEquals($customer->email, 'updated@example.com');
+        $this->assertEquals($customer->address, '222 Green St');
+        $this->assertEquals($customer->group_id, 1);
+        $this->assertEquals($customer->note, 'I\'m, testing');
+    }
+
+    /** @test */
+    public function cannotUpdateCustomerWithInvalidInput()
+    {
+        $c1 = factory(Customer::class)->create([
+            'name' => 'John Smith',
+            'phone' => '111 222 333',
+            'email' => 'test@example.com',
+            'address' => '111 Blue St',
+            'group_id' => 0,
+            'note' => 'blah blah',
+        ]);
+
+        $input = [
+            'email' => 'test',
+        ];
+
+        $res = $this->put("/api/customers/1", $input);
+
+        $customer = Customer::find(1);
+
+        $res->assertStatus(400)->assertJson([
+            'messages' => [
+                'name' => ['The name field is required.'],
+                'email' => ['The email must be a valid email address.'],
+            ],
+        ]);
+        $this->assertEquals($customer->id, 1);
+        $this->assertEquals($customer->name, 'John Smith');
+        $this->assertEquals($customer->phone, '111 222 333');
+        $this->assertEquals($customer->email, 'test@example.com');
+        $this->assertEquals($customer->address, '111 Blue St');
+        $this->assertEquals($customer->group_id, 0);
+        $this->assertEquals($customer->note, 'blah blah');
+    }
+
+    /** @test */
+    public function updatingWithInvalidIdReturnsError()
+    {
+        $this->assertEquals(Customer::find(1), null);
+
+        $res = $this->put("/api/customers/1", [
+            'name' => 'John Smith',
+            'phone' => '111 222 333',
+            'email' => 'test@example.com',
+            'address' => '111 Blue St',
+            'group_id' => 0,
+            'note' => 'blah blah',
+        ]);
+
+        $res->assertStatus(404);
+    }
 }

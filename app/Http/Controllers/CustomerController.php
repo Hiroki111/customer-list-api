@@ -46,6 +46,21 @@ class CustomerController extends Controller
         return response()->json([], 201);
     }
 
+    public function update($id)
+    {
+        $validator = Validator::make(request()->all(), [
+            'name' => 'required',
+            'email' => 'email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['messages' => $validator->errors()], 400);
+        }
+
+        Customer::findOrFail($id)->fill(request()->all())->save();
+        return response()->json([], 201);
+    }
+
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);
