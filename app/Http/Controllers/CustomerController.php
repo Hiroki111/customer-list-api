@@ -10,11 +10,8 @@ class CustomerController extends Controller
     public function index()
     {
         $pageSize = request('pageSize', null);
-        $start = request('start', 0);
         $keyword = request('keyword', null);
-        return response()->json([
-            'data' => Customer::getCustomerList($pageSize, $start, $keyword),
-        ], 200);
+        return response()->json(Customer::getCustomerList($pageSize, $keyword), 200);
     }
 
     public function show($id)

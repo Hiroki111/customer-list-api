@@ -10,8 +10,6 @@ class CustomerControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    private $defaultPageSize = 10;
-
     private function validParams($overrides = [])
     {
         return array_merge([
@@ -35,7 +33,9 @@ class CustomerControllerTest extends TestCase
 
         $res->assertStatus(200)
             ->assertJson([
-                'data' => Customer::take($this->defaultPageSize)->get()->toArray(),
+                'data' => Customer::take(Customer::getDefaultPageSize())->get()->toArray(),
+                'total' => 100,
+                'current_page' => 1,
             ]);
     }
 
@@ -52,22 +52,8 @@ class CustomerControllerTest extends TestCase
         $res->assertStatus(200)
             ->assertJson([
                 'data' => Customer::take($pageSize)->get()->toArray(),
-            ]);
-    }
-
-    /** @test */
-    public function canGetCustomersWithIndex()
-    {
-        foreach (range(1, 100) as $i) {
-            factory(Customer::class)->create();
-        }
-        $start = 10;
-
-        $res = $this->get("/api/customers?start=$start");
-
-        $res->assertStatus(200)
-            ->assertJson([
-                'data' => Customer::where('id', '>=', $start)->take($this->defaultPageSize)->get()->toArray(),
+                'total' => 100,
+                'current_page' => 1,
             ]);
     }
 
@@ -80,7 +66,7 @@ class CustomerControllerTest extends TestCase
         $c1 = factory(Customer::class)->create(['name' => 'john']);
         $c2 = factory(Customer::class)->create(['name' => 'JOHN']);
         $c3 = factory(Customer::class)->create(['name' => 'Johny']);
-        $c4 = factory(Customer::class)->create(['name' => 'Johannes']);
+        $c4 = factory(Customer::class)->create(['name' => 'Johannes']); // This is irrelevant
         $c5 = factory(Customer::class)->create(['name' => 'Elton John']);
 
         $keyword = "john";
@@ -89,7 +75,45 @@ class CustomerControllerTest extends TestCase
 
         $res->assertStatus(200)
             ->assertJson([
-                'data' => Customer::where('name', 'LIKE', $keyword)->take($this->defaultPageSize)->get()->toArray(),
+                'data' => Customer::where('name', 'LIKE', $keyword)->take(Customer::getDefaultPageSize())->get()->toArray(),
+                'total' => 4,
+                'current_page' => 1,
+            ]);
+    }
+
+    /** @test */
+    public function canGetCustomersWithPage()
+    {
+        $irrelevantNames = collect(array_fill(0, 60, null))->map(function ($i) {
+            return ['Alice', 'Bob', 'Carol'][rand(0, 2)];
+        })->all();
+        $relevantNames = collect(array_fill(0, 40, null))->map(function ($i) {
+            return ['john', 'Johny', 'Elton John'][rand(0, 2)];
+        })->all();
+        $names = array_merge($irrelevantNames, $relevantNames);
+        collect($names)->shuffle()->each(function ($name) {
+            return factory(Customer::class)->create(['name' => $name]);
+        });
+
+        $page = 3;
+        $keyword = "john";
+        $pageSize = 7;
+        $res = $this->get("/api/customers?page=$page&keyword=$keyword&pageSize=$pageSize");
+
+        $expectedArray = Customer::where('name', 'LIKE', "%$keyword%")
+            ->get()
+            ->filter(function ($item, $i) use ($page, $pageSize) {
+                return ($page - 1) * $pageSize <= $i;
+            })
+            ->take($pageSize)
+            ->values()
+            ->toArray();
+
+        $res->assertStatus(200)
+            ->assertJson([
+                'current_page' => $page,
+                'data' => $expectedArray,
+                'total' => 40,
             ]);
     }
 

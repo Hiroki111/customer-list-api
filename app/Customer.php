@@ -19,15 +19,13 @@ class Customer extends Model
         return self::$defaultPageSize;
     }
 
-    public static function getCustomerList($pageSize = null, $start = 0, $keyword = null)
+    public static function getCustomerList($pageSize = null, $keyword = null)
     {
         if (!isset($pageSize)) {
             $pageSize = self::$defaultPageSize;
         }
 
-        return Customer::where('id', '>=', $start)
-            ->where('name', 'LIKE', "%$keyword%")
-            ->take($pageSize)
-            ->get();
+        return Customer::where('name', 'LIKE', "%$keyword%")
+            ->paginate($pageSize);
     }
 }
