@@ -12,6 +12,18 @@ class CustomerControllerTest extends TestCase
 
     private $defaultPageSize = 10;
 
+    private function validParams($overrides = [])
+    {
+        return array_merge([
+            'name' => 'John Smith',
+            'phone' => '111 222 333',
+            'email' => 'test@example.com',
+            'address' => '111 Blue St',
+            'group_id' => 0,
+            'note' => 'blah blah',
+        ], $overrides);
+    }
+
     /** @test */
     public function canGetFirstNCustomers()
     {
@@ -21,7 +33,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson([
                 'data' => Customer::take($this->defaultPageSize)->get()->toArray(),
             ]);
@@ -37,7 +49,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers?pageSize=$pageSize");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson([
                 'data' => Customer::take($pageSize)->get()->toArray(),
             ]);
@@ -53,7 +65,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers?start=$start");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson([
                 'data' => Customer::where('id', '>=', $start)->take($this->defaultPageSize)->get()->toArray(),
             ]);
@@ -75,7 +87,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers?keyword=$keyword");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson([
                 'data' => Customer::where('name', 'LIKE', $keyword)->take($this->defaultPageSize)->get()->toArray(),
             ]);
@@ -90,7 +102,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers/2");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson(['data' => [
                 'id' => $c2->id,
                 'name' => $c2->name,
@@ -106,7 +118,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->get("/api/customers/4");
 
-        $res->assertStatus(201)
+        $res->assertStatus(200)
             ->assertJson(['data' => null]);
     }
 
@@ -118,7 +130,7 @@ class CustomerControllerTest extends TestCase
 
         $res = $this->delete("/api/customers/1");
 
-        $res->assertStatus(201);
+        $res->assertStatus(200);
         $this->assertEquals(Customer::find(1), null);
     }
 
@@ -136,19 +148,10 @@ class CustomerControllerTest extends TestCase
     public function canCreateCustomer()
     {
         $this->assertEquals(Customer::find(1), null);
-        $input = [
-            'name' => 'John Smith',
-            'phone' => '111 222 333',
-            'email' => 'test@example.com',
-            'address' => '111 Blue St',
-            'group_id' => 0,
-            'note' => 'blah blah',
-        ];
-
-        $res = $this->post("/api/customers", $input);
+        $res = $this->post("/api/customers", $this->validParams());
         $customer = Customer::find(1);
 
-        $res->assertStatus(201);
+        $res->assertStatus(200);
         $this->assertEquals($customer->id, 1);
         $this->assertEquals($customer->name, 'John Smith');
         $this->assertEquals($customer->phone, '111 222 333');
@@ -169,7 +172,7 @@ class CustomerControllerTest extends TestCase
         $res = $this->post("/api/customers", $input);
         $customer = Customer::find(1);
 
-        $res->assertStatus(201);
+        $res->assertStatus(200);
         $this->assertEquals($customer->id, 1);
         $this->assertEquals($customer->name, 'John Smith');
         $this->assertEquals($customer->phone, null);
@@ -201,14 +204,7 @@ class CustomerControllerTest extends TestCase
     /** @test */
     public function canUpdateCustomer()
     {
-        $c1 = factory(Customer::class)->create([
-            'name' => 'John Smith',
-            'phone' => '111 222 333',
-            'email' => 'test@example.com',
-            'address' => '111 Blue St',
-            'group_id' => 0,
-            'note' => 'blah blah',
-        ]);
+        $c1 = factory(Customer::class)->create($this->validParams());
 
         $res = $this->put("/api/customers/1", [
             'name' => 'John Doe',
@@ -221,7 +217,7 @@ class CustomerControllerTest extends TestCase
 
         $customer = Customer::find(1);
 
-        $res->assertStatus(201);
+        $res->assertStatus(200);
         $this->assertEquals($customer->id, 1);
         $this->assertEquals($customer->name, 'John Doe');
         $this->assertEquals($customer->phone, '444 555 666');
@@ -234,20 +230,11 @@ class CustomerControllerTest extends TestCase
     /** @test */
     public function cannotUpdateCustomerWithInvalidInput()
     {
-        $c1 = factory(Customer::class)->create([
-            'name' => 'John Smith',
-            'phone' => '111 222 333',
-            'email' => 'test@example.com',
-            'address' => '111 Blue St',
-            'group_id' => 0,
-            'note' => 'blah blah',
-        ]);
-
-        $input = [
+        $c1 = factory(Customer::class)->create($this->validParams());
+        $res = $this->put("/api/customers/1", $this->validParams([
+            'name' => null,
             'email' => 'test',
-        ];
-
-        $res = $this->put("/api/customers/1", $input);
+        ]));
 
         $customer = Customer::find(1);
 
@@ -271,14 +258,7 @@ class CustomerControllerTest extends TestCase
     {
         $this->assertEquals(Customer::find(1), null);
 
-        $res = $this->put("/api/customers/1", [
-            'name' => 'John Smith',
-            'phone' => '111 222 333',
-            'email' => 'test@example.com',
-            'address' => '111 Blue St',
-            'group_id' => 0,
-            'note' => 'blah blah',
-        ]);
+        $res = $this->put("/api/customers/1", $this->validParams());
 
         $res->assertStatus(404);
     }

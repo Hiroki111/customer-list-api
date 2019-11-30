@@ -14,14 +14,14 @@ class CustomerController extends Controller
         $keyword = request('keyword', null);
         return response()->json([
             'data' => Customer::getCustomerList($pageSize, $start, $keyword),
-        ], 201);
+        ], 200);
     }
 
     public function show($id)
     {
         return response()->json([
             'data' => Customer::find($id),
-        ], 201);
+        ], 200);
     }
 
     public function store()
@@ -43,7 +43,7 @@ class CustomerController extends Controller
             'group_id' => request('group_id'),
             'note' => request('note'),
         ]);
-        return response()->json([], 201);
+        return response()->json([], 200);
     }
 
     public function update($id)
@@ -58,13 +58,13 @@ class CustomerController extends Controller
         }
 
         Customer::findOrFail($id)->fill(request()->all())->save();
-        return response()->json([], 201);
+        return response()->json([], 200);
     }
 
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);
         $customer->delete();
-        return response()->json([], 201);
+        return response()->json([], 200);
     }
 }
