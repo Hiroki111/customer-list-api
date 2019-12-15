@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Group;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -14,6 +15,11 @@ class Customer extends Model
     protected $guarded = [];
     protected $dates = ['date'];
 
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
+
     public static function getDefaultPageSize()
     {
         return self::$defaultPageSize;
@@ -25,7 +31,8 @@ class Customer extends Model
             $pageSize = self::$defaultPageSize;
         }
 
-        return Customer::where('name', 'LIKE', "%$keyword%")
+        return Customer::with('group')
+            ->where('name', 'LIKE', "%$keyword%")
             ->paginate($pageSize);
     }
 }

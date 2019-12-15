@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Customer;
+use App\Group;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
@@ -25,8 +26,13 @@ class CustomerControllerTest extends TestCase
     /** @test */
     public function canGetFirstNCustomers()
     {
+        foreach (range(1, 30) as $i) {
+            factory(Group::class)->create();
+        }
         foreach (range(1, 100) as $i) {
-            factory(Customer::class)->create();
+            factory(Customer::class)->create([
+                'group_id' => rand(0, 30),
+            ]);
         }
 
         $res = $this->get("/api/customers");
