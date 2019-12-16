@@ -126,8 +126,9 @@ class CustomerControllerTest extends TestCase
     /** @test */
     public function canGetCustomerDetails()
     {
+        $gourp = factory(Group::class)->create();
         $c1 = factory(Customer::class)->create(['name' => 'Alice']);
-        $c2 = factory(Customer::class)->create(['name' => 'Bob']);
+        $c2 = factory(Customer::class)->create(['name' => 'Bob', 'group_id' => $gourp->id]);
         $c3 = factory(Customer::class)->create(['name' => 'Carol']);
 
         $res = $this->get("/api/customers/2");
@@ -136,6 +137,8 @@ class CustomerControllerTest extends TestCase
             ->assertJson(['data' => [
                 'id' => $c2->id,
                 'name' => $c2->name,
+                'group_id' => $gourp->id,
+                'group' => ['name' => $gourp->name],
             ]]);
     }
 
