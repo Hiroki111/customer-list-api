@@ -13,7 +13,11 @@ return [
      */
 
     'supportsCredentials' => false,
-    'allowedOrigins' => ['http://localhost:3000'],
+    'allowedOrigins' => [
+        'http://localhost:3000',
+        'http://customer-list.hiroki-t.me',
+        'https://customer-list.hiroki-t.me'
+    ],
     'allowedOriginsPatterns' => [],
     'allowedHeaders' => ['*'],
     'allowedMethods' => ['*'],
