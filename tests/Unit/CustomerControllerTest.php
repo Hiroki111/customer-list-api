@@ -134,7 +134,7 @@ class CustomerControllerTest extends TestCase
         $res = $this->get("/api/customers/2");
 
         $res->assertStatus(200)
-            ->assertJson(['data' => [
+            ->assertJson(['customer' => [
                 'id' => $c2->id,
                 'name' => $c2->name,
                 'group_id' => $gourp->id,
@@ -152,7 +152,7 @@ class CustomerControllerTest extends TestCase
         $res = $this->get("/api/customers/4");
 
         $res->assertStatus(200)
-            ->assertJson(['data' => null]);
+            ->assertJson(['customer' => null]);
     }
 
     /** @test */

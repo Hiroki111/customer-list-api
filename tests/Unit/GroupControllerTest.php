@@ -21,7 +21,7 @@ class GroupControllerTest extends TestCase
 
         $res->assertStatus(200)
             ->assertJson([
-                'data' => Group::all()->toArray(),
+                'groups' => Group::all()->toArray(),
             ]);
     }
 }

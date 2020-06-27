@@ -8,6 +8,6 @@ class GroupController extends Controller
 {
     public function index()
     {
-        return response()->json(['data' => Group::all()], 200);
+        return response()->json(['groups' => Group::all()], 200);
     }
 }

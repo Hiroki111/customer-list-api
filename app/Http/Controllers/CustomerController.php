@@ -17,7 +17,7 @@ class CustomerController extends Controller
     public function show($id)
     {
         return response()->json([
-            'data' => Customer::with('group')->find($id),
+            'customer' => Customer::with('group')->find($id),
         ], 200);
     }
 
