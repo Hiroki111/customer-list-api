@@ -55,7 +55,7 @@ class CustomerController extends Controller
         }
 
         Customer::findOrFail($id)->fill(request()->all())->save();
-        return response()->json([], 200);
+        return response()->json(['customer' => Customer::findOrFail($id)], 200);
     }
 
     public function destroy($id)
